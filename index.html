@@ -349,9 +349,9 @@
         function initGL() {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-          const gl = canvas.getContext("webgl");
+          const gl = canvas.getContext("webgl2");
           if (!gl) {
-            throw new Error("WebGL not supported in this browser.");
+            throw new Error("WebGL 2.0 not supported in this browser.");
           }
           
           const programInfo = twgl.createProgramInfo(gl, [getVertexShader(), getFragmentShader()]);
