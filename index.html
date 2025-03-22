@@ -67,6 +67,15 @@
             initCameraList(dispatch);
           }
         }, [dispatch, state.rawCameraListState]);
+        useEffect(() => {
+          const listener = () => {
+            dispatch({ type: "reloadCameraList" });
+          };
+          navigator.mediaDevices.addEventListener("devicechange", listener);
+          return () => {
+            navigator.mediaDevices.removeEventListener("devicechange", listener);
+          };
+        }, [dispatch]);
 
         return (
           // <div>
@@ -98,6 +107,8 @@
               jsx(CameraBody, {
                 // activeCameraOptionId={activeCameraOptionId}
                 activeCameraOptionId,
+                // dispatch={dispatch}
+                dispatch,
               }, activeCameraOptionId),
               // />
             ],
@@ -164,7 +175,7 @@
       }
 
       function CameraBody(props) {
-        const { activeCameraOptionId } = props;
+        const { activeCameraOptionId, dispatch } = props;
 
         const video = useRef(null);
         const canvas = useRef(null);
@@ -173,7 +184,15 @@
           if (activeCameraOptionId != null && video.current && canvas.current) {
             const controller = new AbortController();
             const signal = controller.signal;
-            runCamera({ cameraOptionId: activeCameraOptionId, video: video.current, canvas: canvas.current, signal })
+            runCamera({
+              cameraOptionId: activeCameraOptionId,
+              video: video.current,
+              canvas: canvas.current,
+              signal,
+              onInitCamera: () => {
+                dispatch({ type: "reloadCameraList" });
+              },
+            })
               .catch((e) => {
                 if (!signal.aborted || e.name !== "AbortError") {
                   console.error(e);
@@ -231,6 +250,8 @@
             };
           case "initCameraList/failure":
             return { ...state, rawCameraListState: "failed" };
+          case "reloadCameraList":
+            return { ...state, rawCameraListState: "initial" };
           case "selectCamera":
             return { ...state, selectedCameraOptionId: action.payload.deviceId };
           case "startCamera":
@@ -286,9 +307,16 @@
       }
 
       async function runCamera(options) {
-        const { cameraOptionId, video, canvas, signal } = options;
+        const {
+          cameraOptionId,
+          video,
+          canvas,
+          signal,
+          onInitCamera,
+        } = options;
 
         await initCamera();
+        onInitCamera?.();
         const { gl, programInfo, bufferInfo, texture } = initGL();
         while (true) {
           ensureNotAborted(signal);
