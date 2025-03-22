@@ -16,14 +16,22 @@
     </script>
     <script type="module">
       // jsx/jsxs rule of thumb:
+      //
       // - Use jsxs if the `children` prop is an array expression with no spreads
       // - Use jsx otherwise
+      //
+      // Also, when passing props,
+      //
+      // - Put the `key` named prop, if any, in the third argument
+      // - Put all the other props in properties of the second argument
       //
       // Example:
       //
       // - <Component /> -> jsx(Component, {})
       // - <Component>{x}</Component> -> jsx(Component, { children: x })
       // - <Component>{x}{y}</Component> -> jsxs(Component, { children: [x, y] })
+      // - <Component foo={bar} /> -> jsx(Component, { foo: bar })
+      // - <Component key={k} /> -> jsx(Component, {}, k)
 
       import { jsx, jsxs, Fragment } from "react/jsx-runtime";
       import React, { useEffect, useReducer, useRef } from "react";
@@ -283,6 +291,8 @@
           const videoConstraints = {};
           if (cameraId) {
             videoConstraints.deviceId = { exact: cameraId };
+          } else {
+            videoConstraints.facingMode = { ideal: "environment" };
           }
           const stream = await navigator.mediaDevices.getUserMedia({
             video: videoConstraints,
