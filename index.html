@@ -58,14 +58,15 @@
 
       function App() {
         const [state, dispatch] = useReducer(reducer, initialState);
-        const selectedCameraId = getCheckedSelectedCameraId(state);
-        const activeCameraId = getActiveCameraId(state);
+        const cameraList = getCameraList(state);
+        const selectedCameraOptionId = getCheckedSelectedCameraId(state);
+        const activeCameraOptionId = getActiveCameraOptionId(state);
 
         useEffect(() => {
-          if (state.cameraListState === "initial") {
+          if (state.rawCameraListState === "initial") {
             initCameraList(dispatch);
           }
-        }, [dispatch, state.cameraListState]);
+        }, [dispatch, state.rawCameraListState]);
 
         return (
           // <div>
@@ -73,31 +74,31 @@
             children: [
               // <CameraSelector
               jsx(CameraSelector, {
-                // cameraList={state.cameraList}
-                cameraList: state.cameraList,
-                // selectedCameraId={selectedCameraId}
-                selectedCameraId,
+                // cameraList={cameraList}
+                cameraList,
+                // selectedCameraOptionId={selectedCameraOptionId}
+                selectedCameraOptionId,
                 // dispatch={dispatch}
                 dispatch,
               }),
               // />
               // <CameraStartToggle
               jsx(CameraStartToggle, {
-                // selectedCameraId={selectedCameraId}
-                selectedCameraId,
-                // activeCameraId={activeCameraId}
-                activeCameraId,
+                // selectedCameraOptionId={selectedCameraOptionId}
+                selectedCameraOptionId,
+                // activeCameraOptionId={activeCameraOptionId}
+                activeCameraOptionId,
                 // dispatch={dispatch}
                 dispatch,
               }),
               // />
               // <br />
               jsx("br", {}),
-              // <CameraBody key={activeCameraId}
+              // <CameraBody key={activeCameraOptionId}
               jsx(CameraBody, {
-                // activeCameraId={activeCameraId}
-                activeCameraId,
-              }, activeCameraId),
+                // activeCameraOptionId={activeCameraOptionId}
+                activeCameraOptionId,
+              }, activeCameraOptionId),
               // />
             ],
           })
@@ -106,7 +107,7 @@
       }
 
       function CameraSelector(props) {
-        const { cameraList, selectedCameraId, dispatch } = props;
+        const { cameraList, selectedCameraOptionId, dispatch } = props;
 
         const onChange = (e) => {
           dispatch({ type: "selectCamera", payload: { deviceId: e.currentTarget.value } });
@@ -117,20 +118,20 @@
           jsx("select", {
             // onChange={onChange}
             onChange: onChange,
-            // value={selectedCameraId}
-            value: selectedCameraId,
+            // value={selectedCameraOptionId}
+            value: selectedCameraOptionId,
             // >
             children: cameraList.map((camera) => (
-              // <option key={camera.deviceId}
+              // <option key={camera.cameraOptionId}
               jsx("option", {
-                // value={camera.deviceId}
-                value: camera.deviceId,
-                // selected={camera.deviceId === selectedCameraId}
-                selected: camera.deviceId === selectedCameraId,
+                // value={camera.cameraOptionId}
+                value: camera.cameraOptionId,
+                // selected={camera.cameraOptionId === selectedCameraOptionId}
+                selected: camera.cameraOptionId === selectedCameraOptionId,
                 // >
                 // {camera.label}
                 children: camera.label,
-              }, camera.deviceId)
+              }, camera.cameraOptionId)
               // </option>
             )),
           })
@@ -139,12 +140,11 @@
       }
 
       function CameraStartToggle(props) {
-        const { selectedCameraId, activeCameraId, dispatch } = props;
+        const { activeCameraOptionId, dispatch } = props;
 
-        const enabled = selectedCameraId != null;
-        const started = activeCameraId != null;
+        const started = activeCameraOptionId != null;
         const onClick = () => {
-          if (activeCameraId) {
+          if (activeCameraOptionId) {
             dispatch({ type: "stopCamera" });
           } else {
             dispatch({ type: "startCamera" });
@@ -156,8 +156,6 @@
           jsx("button", {
             // onClick={onClick}
             onClick: onClick,
-            // disabled={!enabled}
-            disabled: !enabled,
             // >
             children: started ? "Stop Camera" : "Start Camera",
           })
@@ -166,16 +164,16 @@
       }
 
       function CameraBody(props) {
-        const { activeCameraId } = props;
+        const { activeCameraOptionId } = props;
 
         const video = useRef(null);
         const canvas = useRef(null);
 
         useEffect(() => {
-          if (activeCameraId != null && video.current && canvas.current) {
+          if (activeCameraOptionId != null && video.current && canvas.current) {
             const controller = new AbortController();
             const signal = controller.signal;
-            runCamera({ cameraId: activeCameraId, video: video.current, canvas: canvas.current, signal })
+            runCamera({ cameraOptionId: activeCameraOptionId, video: video.current, canvas: canvas.current, signal })
               .catch((e) => {
                 if (!signal.aborted || e.name !== "AbortError") {
                   console.error(e);
@@ -184,7 +182,7 @@
               });
             return () => controller.abort();
           }
-        }, [activeCameraId, video.current, canvas.current]);
+        }, [activeCameraOptionId, video.current, canvas.current]);
 
         return (
           // <>
@@ -215,27 +213,26 @@
       }
 
       const initialState = {
-        cameraListState: "initial",
-        cameraList: [],
-        selectedCameraId: null,
+        rawCameraListState: "initial",
+        rawCameraList: [],
+        selectedCameraOptionId: "default",
         startRequested: false,
       };
 
       function reducer(state, action) {
         switch (action.type) {
           case "initCameraList/start":
-            return { ...state, cameraListState: "loading" };
+            return { ...state, rawCameraListState: "loading" };
           case "initCameraList/success":
             return {
               ...state,
-              cameraListState: "loaded",
-              cameraList: action.payload.cameraList,
-              selectedCameraId: state.selectedCameraId ?? action.payload.cameraList[0]?.deviceId ?? null,
+              rawCameraListState: "loaded",
+              rawCameraList: action.payload.rawCameraList,
             };
           case "initCameraList/failure":
-            return { ...state, cameraListState: "failed" };
+            return { ...state, rawCameraListState: "failed" };
           case "selectCamera":
-            return { ...state, selectedCameraId: action.payload.deviceId };
+            return { ...state, selectedCameraOptionId: action.payload.deviceId };
           case "startCamera":
             return { ...state, startRequested: true };
           case "stopCamera":
@@ -245,15 +242,29 @@
         }
       }
 
+      function getCameraList(state) {
+        return [
+          {
+            label: "Default Camera",
+            cameraOptionId: "default",
+          },
+          ...state.rawCameraList.map((camera) => ({
+            label: camera.label,
+            cameraOptionId: `deviceId:${camera.deviceId}`,
+          })),
+        ]
+      }
+
       function getCheckedSelectedCameraId(state) {
-        if (state.cameraListState === "loaded" && state.cameraList.some((c) => c.deviceId === state.selectedCameraId)) {
-          return state.selectedCameraId;
+        const cameraList = getCameraList(state);
+        if (cameraList.some((c) => c.cameraOptionId === state.selectedCameraOptionId)) {
+          return state.selectedCameraOptionId;
         } else {
-          return null;
+          return "default";
         }
       }
 
-      function getActiveCameraId(state) {
+      function getActiveCameraOptionId(state) {
         return state.startRequested ? getCheckedSelectedCameraId(state) : null;
       }
 
@@ -266,7 +277,7 @@
             deviceId: d.deviceId,
             groupId: d.groupId,
           }));
-          dispatch({ type: "initCameraList/success", payload: { cameraList: cameras } });
+          dispatch({ type: "initCameraList/success", payload: { rawCameraList: cameras } });
         })().catch((e) => {
           dispatch({ type: "initCameraList/failure", payload: {} });
           console.error(e);
@@ -275,7 +286,7 @@
       }
 
       async function runCamera(options) {
-        const { cameraId, video, canvas, signal } = options;
+        const { cameraOptionId, video, canvas, signal } = options;
 
         await initCamera();
         const { gl, programInfo, bufferInfo, texture } = initGL();
@@ -289,8 +300,9 @@
         async function initCamera() {
           ensureNotAborted(signal);
           const videoConstraints = {};
-          if (cameraId) {
-            videoConstraints.deviceId = { exact: cameraId };
+          if (cameraOptionId.startsWith("deviceId:")) {
+            const deviceId = cameraOptionId.slice("deviceId:".length);
+            videoConstraints.deviceId = { exact: deviceId };
           } else {
             videoConstraints.facingMode = { ideal: "environment" };
           }
