@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Vari Vis! Visualizes chromaticity as monochromatic effects</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.0.0",
+          "react/": "https://esm.sh/react@19.0.0/",
+          "react-dom/": "https://esm.sh/react-dom@19.0.0/",
+          "react-toastify": "https://esm.sh/react-toastify@11.0.5",
+          "twgl.js": "https://esm.sh/twgl.js@4.21.2"
+        }
+      }
+    </script>
+    <script type="module">
+      // jsx/jsxs rule of thumb:
+      // - Use jsxs if the `children` prop is an array expression with no spreads
+      // - Use jsx otherwise
+      //
+      // Example:
+      //
+      // - <Component /> -> jsx(Component, {})
+      // - <Component>{x}</Component> -> jsx(Component, { children: x })
+      // - <Component>{x}{y}</Component> -> jsxs(Component, { children: [x, y] })
+
+      import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+      import React, { useEffect, useReducer, useRef } from "react";
+      import ReactDOMClient from "react-dom/client";
+      import * as twgl from "twgl.js";
+      import { ToastContainer, toast } from "react-toastify";
+
+      function main() {
+        const rootElement = document.getElementById("root");
+        const root = ReactDOMClient.createRoot(rootElement);
+        root.render(
+          // <>
+          jsxs(Fragment, {
+            children: [
+              // <App />
+              jsx(App, {}),
+              // <ToastContainer />
+              jsx(ToastContainer, {}),
+            ],
+          }),
+          // </>
+        );
+      }
+
+      function App() {
+        const [state, dispatch] = useReducer(reducer, initialState);
+        const selectedCameraId = getCheckedSelectedCameraId(state);
+        const activeCameraId = getActiveCameraId(state);
+
+        useEffect(() => {
+          if (state.cameraListState === "initial") {
+            initCameraList(dispatch);
+          }
+        }, [dispatch, state.cameraListState]);
+
+        return (
+          // <div>
+          jsxs("div", {
+            children: [
+              // <CameraSelector
+              jsx(CameraSelector, {
+                // cameraList={state.cameraList}
+                cameraList: state.cameraList,
+                // selectedCameraId={selectedCameraId}
+                selectedCameraId,
+                // dispatch={dispatch}
+                dispatch,
+              }),
+              // />
+              // <CameraStartToggle
+              jsx(CameraStartToggle, {
+                // selectedCameraId={selectedCameraId}
+                selectedCameraId,
+                // activeCameraId={activeCameraId}
+                activeCameraId,
+                // dispatch={dispatch}
+                dispatch,
+              }),
+              // />
+              // <br />
+              jsx("br", {}),
+              // <CameraBody key={activeCameraId}
+              jsx(CameraBody, {
+                // activeCameraId={activeCameraId}
+                activeCameraId,
+              }, activeCameraId),
+              // />
+            ],
+          })
+          // </div>
+        );
+      }
+
+      function CameraSelector(props) {
+        const { cameraList, selectedCameraId, dispatch } = props;
+
+        const onChange = (e) => {
+          dispatch({ type: "selectCamera", payload: { deviceId: e.currentTarget.value } });
+        };
+        
+        return (
+          // <select
+          jsx("select", {
+            // onChange={onChange}
+            onChange: onChange,
+            // value={selectedCameraId}
+            value: selectedCameraId,
+            // >
+            children: cameraList.map((camera) => (
+              // <option key={camera.deviceId}
+              jsx("option", {
+                // value={camera.deviceId}
+                value: camera.deviceId,
+                // selected={camera.deviceId === selectedCameraId}
+                selected: camera.deviceId === selectedCameraId,
+                // >
+                // {camera.label}
+                children: camera.label,
+              }, camera.deviceId)
+              // </option>
+            )),
+          })
+          // </select>
+        );
+      }
+
+      function CameraStartToggle(props) {
+        const { selectedCameraId, activeCameraId, dispatch } = props;
+
+        const enabled = selectedCameraId != null;
+        const started = activeCameraId != null;
+        const onClick = () => {
+          if (activeCameraId) {
+            dispatch({ type: "stopCamera" });
+          } else {
+            dispatch({ type: "startCamera" });
+          }
+        };
+
+        return (
+          // <button
+          jsx("button", {
+            // onClick={onClick}
+            onClick: onClick,
+            // disabled={!enabled}
+            disabled: !enabled,
+            // >
+            children: started ? "Stop Camera" : "Start Camera",
+          })
+          // </button>
+        );
+      }
+
+      function CameraBody(props) {
+        const { activeCameraId } = props;
+
+        const video = useRef(null);
+        const canvas = useRef(null);
+
+        useEffect(() => {
+          if (activeCameraId != null && video.current && canvas.current) {
+            const controller = new AbortController();
+            const signal = controller.signal;
+            runCamera({ cameraId: activeCameraId, video: video.current, canvas: canvas.current, signal })
+              .catch((e) => {
+                if (!signal.aborted || e.name !== "AbortError") {
+                  console.error(e);
+                  toast(`${e}`, { type: "error" });
+                }
+              });
+            return () => controller.abort();
+          }
+        }, [activeCameraId, video.current, canvas.current]);
+
+        return (
+          // <>
+          jsxs(Fragment, {
+            children: [
+              // <video
+              jsx("video", {
+                // style={{ display: "none" }}
+                style: { display: "none" },
+                // muted={true}
+                muted: true,
+                // playsInline={true}
+                playsInline: true,
+                // ref={video}
+                ref: video,
+                // />
+              }),
+              // <canvas
+              jsx("canvas", {
+                // ref={canvas}
+                ref: canvas,
+                // />
+              }),
+            ],
+          })
+          // </>
+        );
+      }
+
+      const initialState = {
+        cameraListState: "initial",
+        cameraList: [],
+        selectedCameraId: null,
+        startRequested: false,
+      };
+
+      function reducer(state, action) {
+        switch (action.type) {
+          case "initCameraList/start":
+            return { ...state, cameraListState: "loading" };
+          case "initCameraList/success":
+            return {
+              ...state,
+              cameraListState: "loaded",
+              cameraList: action.payload.cameraList,
+              selectedCameraId: state.selectedCameraId ?? action.payload.cameraList[0]?.deviceId ?? null,
+            };
+          case "initCameraList/failure":
+            return { ...state, cameraListState: "failed" };
+          case "selectCamera":
+            return { ...state, selectedCameraId: action.payload.deviceId };
+          case "startCamera":
+            return { ...state, startRequested: true };
+          case "stopCamera":
+            return { ...state, startRequested: false };
+          default:
+            return state;
+        }
+      }
+
+      function getCheckedSelectedCameraId(state) {
+        if (state.cameraListState === "loaded" && state.cameraList.some((c) => c.deviceId === state.selectedCameraId)) {
+          return state.selectedCameraId;
+        } else {
+          return null;
+        }
+      }
+
+      function getActiveCameraId(state) {
+        return state.startRequested ? getCheckedSelectedCameraId(state) : null;
+      }
+
+      function initCameraList(dispatch) {
+        (async () => {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const cameras = devices.filter((d) => d.kind === "videoinput").map((d) => ({
+            kind: d.kind,
+            label: d.label,
+            deviceId: d.deviceId,
+            groupId: d.groupId,
+          }));
+          dispatch({ type: "initCameraList/success", payload: { cameraList: cameras } });
+        })().catch((e) => {
+          dispatch({ type: "initCameraList/failure", payload: {} });
+          console.error(e);
+          toast(`Failed to initialize camera list: ${e}`, { type: "error" });
+        });
+      }
+
+      async function runCamera(options) {
+        const { cameraId, video, canvas, signal } = options;
+
+        await initCamera();
+        const { gl, programInfo, bufferInfo, texture } = initGL();
+        while (true) {
+          ensureNotAborted(signal);
+          await animationFrame();
+          ensureNotAborted(signal);
+          updateFrame();
+        }
+
+        async function initCamera() {
+          ensureNotAborted(signal);
+          const videoConstraints = {};
+          if (cameraId) {
+            videoConstraints.deviceId = { exact: cameraId };
+          }
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraints,
+            audio: false
+          });
+          video.srcObject = stream;
+          ensureNotAborted(signal);
+          await video.play();
+          onAbort(signal, () => {
+            stream.getTracks().forEach((track) => track.stop());
+          });
+        }
+
+        function initGL() {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const gl = canvas.getContext("webgl");
+          if (!gl) {
+            throw new Error("WebGL not supported in this browser.");
+          }
+          
+          const programInfo = twgl.createProgramInfo(gl, [getVertexShader(), getFragmentShader()]);
+          const bufferInfo = twgl.primitives.createXYQuadBufferInfo(gl);
+          const blue = [0, 0, 255, 255];
+          const texture = twgl.createTexture(gl, {
+            src: blue,
+            min: gl.LINEAR,
+            mag: gl.LINEAR,
+            wrap: gl.CLAMP_TO_EDGE,
+          });
+          return { gl, programInfo, bufferInfo, texture };
+        }
+
+        function getVertexShader() {
+          return `
+            attribute vec4 position;
+            attribute vec2 texcoord;
+            varying vec2 v_texcoord;
+
+            void main() {
+              // Flip position vertically (but not horizontally)
+              gl_Position = vec4(position.x, -position.y, position.z, position.w);
+              v_texcoord = texcoord;
+            }
+          `;
+        }
+
+        function getFragmentShader() {
+          return `
+            precision mediump float;
+            varying vec2 v_texcoord;
+            uniform sampler2D u_texture;
+
+            void main() {
+              vec4 color = texture2D(u_texture, v_texcoord);
+              gl_FragColor = color;
+            }
+          `;
+        }
+
+        function updateFrame() {
+          // If the video is ready, update the texture
+          if (video.readyState >= video.HAVE_CURRENT_DATA) {
+            // Update the texture with the current video frame
+            twgl.setTextureFromElement(gl, texture, video);
+          }
+
+          // Adjust viewport/canvas size if needed
+          twgl.resizeCanvasToDisplaySize(gl.canvas);
+          gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+          // Clear the canvas
+          gl.clearColor(0, 0, 0, 1);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+
+          // Use our program and buffers
+          gl.useProgram(programInfo.program);
+          twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+
+          // Set uniforms (the texture)
+          const uniforms = {
+            u_texture: texture,
+          };
+          twgl.setUniforms(programInfo, uniforms);
+
+          // Draw!
+          twgl.drawBufferInfo(gl, bufferInfo);
+        }
+      }
+
+      function ensureNotAborted(signal, msg = "Aborted") {
+        if (signal.aborted) {
+          throw new DOMException(msg, "AbortError");
+        }
+      }
+      function onAbort(signal, callback) {
+        if (signal.aborted) {
+          callback();
+        } else {
+          signal.addEventListener("abort", callback, { once: true });
+        }
+      }
+      function animationFrame() {
+        return new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+
+      main();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
