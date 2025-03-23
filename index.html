@@ -219,12 +219,21 @@
                 ref: video,
                 // />
               }),
-              // <canvas
-              jsx("canvas", {
-                // ref={canvas}
-                ref: canvas,
-                // />
+              // <div
+              jsx("div", {
+                // className="camera-output-wrapper"
+                className: "camera-output-wrapper",
+                children:
+                  // <canvas
+                  jsx("canvas", {
+                    // className="camera-output"
+                    className: "camera-output",
+                    // ref={canvas}
+                    ref: canvas,
+                    // />
+                  }),
               }),
+              // </div>
             ],
           })
           // </>
@@ -499,6 +508,16 @@
 
       main();
     </script>
+    <style>
+      .camera-output-wrapper {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+      }
+      .camera-output {
+        object-fit: contain;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
