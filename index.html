@@ -410,16 +410,38 @@
               vec4 color = texture2D(u_texture, v_texcoord);
               vec3 lmsColor = sRGBToLMS * color.rgb;
               vec2 unitCoord = v_texcoord * u_unitDimension;
-              vec2 unitCoordFl = floor(unitCoord);
-              float idx = mod(unitCoordFl.x + unitCoordFl.y, 3.0);
-              float targetBrightness;
-              if (idx < 0.5) {
-                targetBrightness = lmsColor.r;
-              } else if (idx < 1.5) {
-                targetBrightness = lmsColor.g;
-              } else {
-                targetBrightness = lmsColor.b;
+              vec2 c = unitCoord;
+              c = mat2(
+                1.0, 0.0,
+                -0.5773502691896258, 1.1547005383792515
+              ) * c;
+              c = mod(c, 1.0);
+              // Mirror c across the line x+y=1
+              if (c.x + c.y > 1.0) {
+                c = vec2(1.0) - c;
               }
+              // Mirror c across the line y=x
+              if (c.x < c.y) {
+                c = vec2(c.y, c.x);
+              }
+              // Mirror c across the line x+2y=1 (but not orthogonally)
+              if (c.x + 2.0 * c.y > 1.0) {
+                c = vec2(c.x, 1.0 - c.x - c.y);
+              }
+              // Mirror c across the line 2x+y=1 (but not orthogonally)
+              if (2.0 * c.x + c.y > 1.0) {
+                c = vec2(1.0 - c.x - c.y, c.y);
+              }
+              c = vec2(c.x * 2.0 + c.y, c.y * 3.0);
+
+              float sRatio = smoothstep(0.62, 0.64, c.y);
+              float mRatio = 1.0 - smoothstep(0.62, 0.64, c.x);
+              vec3 lmsRatio = vec3(
+                (1.0 - mRatio) * (1.0 - sRatio),
+                mRatio * (1.0 - sRatio),
+                sRatio
+              );
+              float targetBrightness = dot(lmsColor, lmsRatio);
               float currentBrightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
               gl_FragColor = vec4(color.rgb * targetBrightness / currentBrightness, color.a);
             }
@@ -447,7 +469,7 @@
 
           // Set uniforms (the texture)
           const canvasSize = Math.min(canvas.width, canvas.height);
-          const unitSize = canvasSize / 50;
+          const unitSize = canvasSize / 30;
           const uniforms = {
             u_texture: texture,
             u_unitDimension: [canvas.width / unitSize, canvas.height / unitSize],

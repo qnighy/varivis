@@ -26,3 +26,4 @@ lsRgbToLmsD65 = xyzToLmsD65 * lsRgbToXyz
 puts "linear-sRGB to LMS = #{lsRgbToLmsD65}"
 puts "LMS to linear-sRGB = #{lsRgbToLmsD65.inverse}"
 puts "Normalization test: #{ lsRgbToLmsD65 * Vector[1.0, 1.0, 1.0] }"
+puts "Contribution of L/M/S to Y: #{ xyzToLmsD65.inverse.row(1) }"
