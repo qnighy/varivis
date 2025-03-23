@@ -385,10 +385,43 @@
             precision mediump float;
             varying vec2 v_texcoord;
             uniform sampler2D u_texture;
+            uniform vec2 u_unitDimension;
+            // Conversion from linear-sRGB to LMS
+            // [0.3140, 0.6395, 0.04650]
+            // [0.1554, 0.7579, 0.08670]
+            // [0.0178, 0.1094, 0.8726 ]
+            const mat3 sRGBToLMS = mat3(
+              0.3140, 0.1554, 0.0178,
+              0.6395, 0.7579, 0.1094,
+              0.0465, 0.0867, 0.8726
+            );
+            // Conversion from LMS to linear-sRGB
+            // [ 5.472  , -4.642 ,  0.1696]
+            // [-1.125  ,  2.293 , -0.1679]
+            // [ 0.02980, -0.1932,  1.164]
+            const mat3 LMSToSRGB = mat3(
+              5.472, -1.125, 0.0298,
+              -4.642, 2.293, -0.1932,
+              0.1696, -0.1679, 1.164
+            );
+
 
             void main() {
               vec4 color = texture2D(u_texture, v_texcoord);
-              gl_FragColor = color;
+              vec3 lmsColor = sRGBToLMS * color.rgb;
+              vec2 unitCoord = v_texcoord * u_unitDimension;
+              vec2 unitCoordFl = floor(unitCoord);
+              float idx = mod(unitCoordFl.x + unitCoordFl.y, 3.0);
+              float targetBrightness;
+              if (idx < 0.5) {
+                targetBrightness = lmsColor.r;
+              } else if (idx < 1.5) {
+                targetBrightness = lmsColor.g;
+              } else {
+                targetBrightness = lmsColor.b;
+              }
+              float currentBrightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+              gl_FragColor = vec4(color.rgb * targetBrightness / currentBrightness, color.a);
             }
           `;
         }
@@ -413,8 +446,11 @@
           twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
 
           // Set uniforms (the texture)
+          const canvasSize = Math.min(canvas.width, canvas.height);
+          const unitSize = canvasSize / 50;
           const uniforms = {
             u_texture: texture,
+            u_unitDimension: [canvas.width / unitSize, canvas.height / unitSize],
           };
           twgl.setUniforms(programInfo, uniforms);
 
