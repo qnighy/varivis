@@ -435,7 +435,7 @@
               c = vec2(c.x * 2.0 + c.y, c.y * 3.0);
 
               float sRatio = smoothstep(0.62, 0.64, c.y);
-              float mRatio = 1.0 - smoothstep(0.62, 0.64, c.x);
+              float mRatio = 1.5 - smoothstep(0.62, 0.64, c.x) * 2.0;
               vec3 lmsRatio = vec3(
                 (1.0 - mRatio) * (1.0 - sRatio),
                 mRatio * (1.0 - sRatio),
