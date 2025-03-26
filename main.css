@@ -1,0 +1,8 @@
+.camera-output-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+.camera-output {
+  object-fit: contain;
+}
