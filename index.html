@@ -446,7 +446,7 @@
                 inHexagon
               );
               float targetBrightness = dot(trhColor, trhRatio);
-              float currentBrightness = dot(color.rgb, vec3(0.299, 0.587, 0.114));
+              float currentBrightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
               gl_FragColor = vec4(color.rgb * targetBrightness / currentBrightness, color.a);
             }
           `;
