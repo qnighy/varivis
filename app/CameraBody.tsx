@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import * as twgl from "twgl.js";
@@ -34,39 +33,17 @@ export function CameraBody(props) {
   }, [activeCameraOptionId, video.current, canvas.current]);
 
   return (
-    // <>
-    jsxs(Fragment, {
-      children: [
-        // <video
-        jsx("video", {
-          // style={{ display: "none" }}
-          style: { display: "none" },
-          // muted={true}
-          muted: true,
-          // playsInline={true}
-          playsInline: true,
-          // ref={video}
-          ref: video,
-          // />
-        }),
-        // <div
-        jsx("div", {
-          // className="camera-output-wrapper"
-          className: "camera-output-wrapper",
-          children:
-            // <canvas
-            jsx("canvas", {
-              // className="camera-output"
-              className: "camera-output",
-              // ref={canvas}
-              ref: canvas,
-              // />
-            }),
-        }),
-        // </div>
-      ],
-    })
-    // </>
+    <>
+      <video
+        style={{ display: "none" }}
+        muted={true}
+        playsInline={true}
+        ref={video}
+      />
+      <div className="camera-output-wrapper">
+        <canvas className="camera-output" ref={canvas} />
+      </div>
+    </>
   );
 }
 

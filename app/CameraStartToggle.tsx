@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { jsx } from "react/jsx-runtime";
 
 export function CameraStartToggle(props) {
   const { activeCameraOptionId, dispatch } = props;
@@ -14,13 +13,8 @@ export function CameraStartToggle(props) {
   };
 
   return (
-    // <button
-    jsx("button", {
-      // onClick={onClick}
-      onClick: onClick,
-      // >
-      children: started ? "Stop Camera" : "Start Camera",
-    })
-    // </button>
+    <button onClick={onClick}>
+      {started ? "Stop Camera" : "Start Camera"}
+    </button>
   );
 }

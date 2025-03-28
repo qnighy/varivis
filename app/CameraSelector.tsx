@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { jsx } from "react/jsx-runtime";
 
 export function CameraSelector(props) {
   const { cameraList, selectedCameraOptionId, dispatch } = props;
@@ -9,27 +8,19 @@ export function CameraSelector(props) {
   };
   
   return (
-    // <select
-    jsx("select", {
-      // onChange={onChange}
-      onChange: onChange,
-      // value={selectedCameraOptionId}
-      value: selectedCameraOptionId,
-      // >
-      children: cameraList.map((camera) => (
-        // <option key={camera.cameraOptionId}
-        jsx("option", {
-          // value={camera.cameraOptionId}
-          value: camera.cameraOptionId,
-          // selected={camera.cameraOptionId === selectedCameraOptionId}
-          selected: camera.cameraOptionId === selectedCameraOptionId,
-          // >
-          // {camera.label}
-          children: camera.label,
-        }, camera.cameraOptionId)
-        // </option>
-      )),
-    })
-    // </select>
+    <select
+      onChange={onChange}
+      value={selectedCameraOptionId}
+    >
+      {cameraList.map((camera) => (
+        <option
+          key={camera.cameraOptionId}
+          value={camera.cameraOptionId}
+          selected={camera.cameraOptionId === selectedCameraOptionId}
+        >
+          {camera.label}
+        </option>
+      ))}
+    </select>
   );
 }

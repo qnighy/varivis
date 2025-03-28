@@ -1,4 +1,3 @@
-import { jsx, jsxs } from "react/jsx-runtime";
 import { useEffect, useReducer } from "react";
 import { CameraSelector } from "./CameraSelector";
 import { CameraStartToggle } from "./CameraStartToggle";
@@ -34,41 +33,22 @@ export function App() {
   }, [dispatch]);
 
   return (
-    // <div>
-    jsxs("div", {
-      children: [
-        // <CameraSelector
-        jsx(CameraSelector, {
-          // cameraList={cameraList}
-          cameraList,
-          // selectedCameraOptionId={selectedCameraOptionId}
-          selectedCameraOptionId,
-          // dispatch={dispatch}
-          dispatch,
-        }),
-        // />
-        // <CameraStartToggle
-        jsx(CameraStartToggle, {
-          // selectedCameraOptionId={selectedCameraOptionId}
-          selectedCameraOptionId,
-          // activeCameraOptionId={activeCameraOptionId}
-          activeCameraOptionId,
-          // dispatch={dispatch}
-          dispatch,
-        }),
-        // />
-        // <br />
-        jsx("br", {}),
-        // <CameraBody key={activeCameraOptionId}
-        jsx(CameraBody, {
-          // activeCameraOptionId={activeCameraOptionId}
-          activeCameraOptionId,
-          // dispatch={dispatch}
-          dispatch,
-        }, activeCameraOptionId),
-        // />
-      ],
-    })
-    // </div>
+    <div>
+      <CameraSelector
+        cameraList={cameraList}
+        selectedCameraOptionId={selectedCameraOptionId}
+        dispatch={dispatch}
+      />
+      <CameraStartToggle
+        selectedCameraOptionId={selectedCameraOptionId}
+        activeCameraOptionId={activeCameraOptionId}
+        dispatch={dispatch}
+      />
+      <br />
+      <CameraBody key={activeCameraOptionId}
+        activeCameraOptionId={activeCameraOptionId}
+        dispatch={dispatch}
+      />
+    </div>
   );
 }
