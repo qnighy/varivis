@@ -1,14 +1,37 @@
-// @ts-nocheck
+import { Dispatch } from "react";
 import { toast } from "react-toastify";
 
-export const initialState = {
+export type State = {
+  rawCameraListState: "initial" | "loading" | "loaded" | "failed";
+  rawCameraList: MediaDeviceInfoObj[];
+  selectedCameraOptionId: string;
+  startRequested: boolean;
+};
+
+export type MediaDeviceInfoObj = {
+  kind: string;
+  label: string;
+  deviceId: string;
+  groupId: string;
+}
+
+export const initialState: State = {
   rawCameraListState: "initial",
   rawCameraList: [],
   selectedCameraOptionId: "default",
   startRequested: false,
 };
 
-export function reducer(state, action) {
+export type Action =
+  | { type: "initCameraList/start" }
+  | { type: "initCameraList/success"; payload: { rawCameraList: MediaDeviceInfoObj[] } }
+  | { type: "initCameraList/failure"; payload: {} }
+  | { type: "reloadCameraList" }
+  | { type: "selectCamera"; payload: { deviceId: string } }
+  | { type: "startCamera" }
+  | { type: "stopCamera" };
+
+export function reducer(state: State, action: Action): State {
   switch (action.type) {
     case "initCameraList/start":
       return { ...state, rawCameraListState: "loading" };
@@ -33,7 +56,12 @@ export function reducer(state, action) {
   }
 }
 
-export function getCameraList(state) {
+export type CameraOptionData = {
+  label: string;
+  cameraOptionId: string;
+};
+
+export function getCameraList(state: State): CameraOptionData[] {
   return [
     {
       label: "Default Camera",
@@ -46,7 +74,7 @@ export function getCameraList(state) {
   ]
 }
 
-export function getCheckedSelectedCameraId(state) {
+export function getCheckedSelectedCameraId(state: State): string {
   const cameraList = getCameraList(state);
   if (cameraList.some((c) => c.cameraOptionId === state.selectedCameraOptionId)) {
     return state.selectedCameraOptionId;
@@ -55,11 +83,11 @@ export function getCheckedSelectedCameraId(state) {
   }
 }
 
-export function getActiveCameraOptionId(state) {
+export function getActiveCameraOptionId(state: State): string | null {
   return state.startRequested ? getCheckedSelectedCameraId(state) : null;
 }
 
-export function initCameraList(dispatch) {
+export function initCameraList(dispatch: Dispatch<Action>): void {
   (async () => {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const cameras = devices.filter((d) => d.kind === "videoinput").map((d) => ({

@@ -1,9 +1,14 @@
-// @ts-nocheck
-import { useEffect, useRef } from "react";
+import { Dispatch, ReactElement, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import * as twgl from "twgl.js";
+import { Action } from "./state";
 
-export function CameraBody(props) {
+export type CameraBodyProps = {
+  activeCameraOptionId: string | null;
+  dispatch: Dispatch<Action>;
+};
+
+export function CameraBody(props: CameraBodyProps): ReactElement | null {
   const { activeCameraOptionId, dispatch } = props;
 
   const video = useRef(null);
@@ -47,7 +52,15 @@ export function CameraBody(props) {
   );
 }
 
-async function runCamera(options) {
+type RunCameraOptions = {
+  cameraOptionId: string;
+  video: HTMLVideoElement;
+  canvas: HTMLCanvasElement;
+  signal: AbortSignal;
+  onInitCamera?: () => void;
+};
+
+async function runCamera(options: RunCameraOptions): Promise<void> {
   const {
     cameraOptionId,
     video,
@@ -68,7 +81,7 @@ async function runCamera(options) {
 
   async function initCamera() {
     ensureNotAborted(signal);
-    const videoConstraints = {};
+    const videoConstraints: MediaTrackConstraints = {};
     if (cameraOptionId.startsWith("deviceId:")) {
       const deviceId = cameraOptionId.slice("deviceId:".length);
       videoConstraints.deviceId = { exact: deviceId };
@@ -191,7 +204,7 @@ async function runCamera(options) {
     }
 
     // Adjust viewport/canvas size if needed
-    twgl.resizeCanvasToDisplaySize(gl.canvas);
+    twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     // Clear the canvas
@@ -216,12 +229,12 @@ async function runCamera(options) {
   }
 }
 
-function ensureNotAborted(signal, msg = "Aborted") {
+function ensureNotAborted(signal: AbortSignal, msg = "Aborted") {
   if (signal.aborted) {
     throw new DOMException(msg, "AbortError");
   }
 }
-function onAbort(signal, callback) {
+function onAbort(signal: AbortSignal, callback: () => void) {
   if (signal.aborted) {
     callback();
   } else {
