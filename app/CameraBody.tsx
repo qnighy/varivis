@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";

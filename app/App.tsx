@@ -1,8 +1,8 @@
 import { jsx, jsxs } from "react/jsx-runtime";
 import { useEffect, useReducer } from "react";
-import { CameraSelector } from "./CameraSelector.js";
-import { CameraStartToggle } from "./CameraStartToggle.js";
-import { CameraBody } from "./CameraBody.js";
+import { CameraSelector } from "./CameraSelector";
+import { CameraStartToggle } from "./CameraStartToggle";
+import { CameraBody } from "./CameraBody";
 import {
   initialState,
   reducer,
@@ -10,7 +10,7 @@ import {
   getCheckedSelectedCameraId,
   getActiveCameraOptionId,
   initCameraList,
-} from "./state.js";
+} from "./state";
 
 export function App() {
   const [state, dispatch] = useReducer(reducer, initialState);

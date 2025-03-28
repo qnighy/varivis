@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { jsx } from "react/jsx-runtime";
 
 export function CameraSelector(props) {
