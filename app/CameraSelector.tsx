@@ -23,7 +23,6 @@ export function CameraSelector(props: CameraSelectorProps): ReactElement | null 
         <option
           key={camera.cameraOptionId}
           value={camera.cameraOptionId}
-          selected={camera.cameraOptionId === selectedCameraOptionId}
         >
           {camera.label}
         </option>
