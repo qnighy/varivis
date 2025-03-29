@@ -11,8 +11,8 @@ export type CameraBodyProps = {
 export function CameraBody(props: CameraBodyProps): ReactElement | null {
   const { activeCameraOptionId, dispatch } = props;
 
-  const video = useRef(null);
-  const canvas = useRef(null);
+  const video = useRef<HTMLVideoElement>(null);
+  const canvas = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (activeCameraOptionId != null && video.current && canvas.current) {
@@ -38,17 +38,27 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
   }, [activeCameraOptionId, dispatch]);
 
   return (
-    <>
-      <video
-        style={{ display: "none" }}
-        muted={true}
-        playsInline={true}
-        ref={video}
-      />
-      <div className="flex w-screen h-screen">
-        <canvas className="object-contain" ref={canvas} />
+    <div
+      className="flex flex-col items-center justify-center w-screen h-screen"
+    >
+      <div
+        className="absolute top-0 left-0 w-screen h-screen opacity-0"
+      >
+        <video
+          style={{ display: "none" }}
+          muted={true}
+          playsInline={true}
+          ref={video}
+          className="w-screen h-screen"
+        />
       </div>
-    </>
+      <div className="absolute top-0 left-0 flex w-screen h-screen z-0">
+        <canvas
+          className="object-contain w-screen h-screen"
+          ref={canvas}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -101,8 +111,6 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
   }
 
   function initGL() {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
     const gl = canvas.getContext("webgl2");
     if (!gl) {
       throw new Error("WebGL 2.0 not supported in this browser.");
@@ -197,6 +205,10 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
   }
 
   function updateFrame() {
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    canvas.width = width;
+    canvas.height = height;
     // If the video is ready, update the texture
     if (video.readyState >= video.HAVE_CURRENT_DATA) {
       // Update the texture with the current video frame
@@ -204,8 +216,8 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     }
 
     // Adjust viewport/canvas size if needed
-    twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    // twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
+    gl.viewport(0, 0, width, height);
 
     // Clear the canvas
     gl.clearColor(0, 0, 0, 1);
@@ -216,11 +228,11 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
 
     // Set uniforms (the texture)
-    const canvasSize = Math.min(canvas.width, canvas.height);
+    const canvasSize = Math.min(width, height);
     const unitSize = canvasSize / 30;
     const uniforms = {
       u_texture: texture,
-      u_unitDimension: [canvas.width / unitSize, canvas.height / unitSize],
+      u_unitDimension: [width / unitSize, height / unitSize],
     };
     twgl.setUniforms(programInfo, uniforms);
 

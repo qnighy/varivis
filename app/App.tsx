@@ -33,22 +33,27 @@ export function App() {
   }, [dispatch]);
 
   return (
-    <div>
-      <CameraSelector
-        cameraList={cameraList}
-        selectedCameraOptionId={selectedCameraOptionId}
-        dispatch={dispatch}
-      />
-      <CameraStartToggle
-        selectedCameraOptionId={selectedCameraOptionId}
-        activeCameraOptionId={activeCameraOptionId}
-        dispatch={dispatch}
-      />
-      <br />
+    <div
+      className="flex flex-col items-center justify-center w-screen h-screen bg-gray-100"
+    >
       <CameraBody key={activeCameraOptionId}
         activeCameraOptionId={activeCameraOptionId}
         dispatch={dispatch}
       />
+      <div
+        className="flex flex-col items-center justify-center w-full max-w-xs p-4 bg-white border border-gray-300 rounded-md shadow-md z-10"
+      >
+        <CameraSelector
+          cameraList={cameraList}
+          selectedCameraOptionId={selectedCameraOptionId}
+          dispatch={dispatch}
+        />
+        <CameraStartToggle
+          selectedCameraOptionId={selectedCameraOptionId}
+          activeCameraOptionId={activeCameraOptionId}
+          dispatch={dispatch}
+        />
+      </div>
     </div>
   );
 }
