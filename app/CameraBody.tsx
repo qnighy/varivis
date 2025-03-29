@@ -35,7 +35,7 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
         });
       return () => controller.abort();
     }
-  }, [activeCameraOptionId, video.current, canvas.current]);
+  }, [activeCameraOptionId, dispatch]);
 
   return (
     <>

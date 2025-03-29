@@ -25,6 +25,7 @@ export const initialState: State = {
 export type Action =
   | { type: "initCameraList/start" }
   | { type: "initCameraList/success"; payload: { rawCameraList: MediaDeviceInfoObj[] } }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   | { type: "initCameraList/failure"; payload: {} }
   | { type: "reloadCameraList" }
   | { type: "selectCamera"; payload: { deviceId: string } }
