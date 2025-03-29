@@ -52,14 +52,23 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     onInitCamera,
   } = options;
   let video!: HTMLVideoElement;
+  let stream!: MediaStream;
 
-  await initCamera();
-  onInitCamera?.();
-  while (true) {
-    ensureNotAborted(signal);
-    await animationFrame();
-    ensureNotAborted(signal);
-    canvas.update(video);
+  try {
+    await initCamera();
+    onInitCamera?.();
+    while (true) {
+      ensureNotAborted(signal);
+      await animationFrame();
+      ensureNotAborted(signal);
+      canvas.update(video);
+    }
+  } finally {
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+      stream.getTracks().forEach((track) => track.stop());
+    }
   }
 
   async function initCamera() {
@@ -75,7 +84,7 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     } else {
       videoConstraints.facingMode = { ideal: "environment" };
     }
-    const stream = await navigator.mediaDevices.getUserMedia({
+    stream = await navigator.mediaDevices.getUserMedia({
       video: videoConstraints,
       audio: false
     });
