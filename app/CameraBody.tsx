@@ -1,18 +1,18 @@
-import { Dispatch, ReactElement, useEffect, useRef } from "react";
+import { Dispatch, ReactElement, RefObject, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { Action } from "./state";
-import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
+import { FilterCanvasHandle } from "./FilterCanvas";
 
 export type CameraBodyProps = {
   activeCameraOptionId: string | null;
+  canvas: RefObject<FilterCanvasHandle | null>;
   dispatch: Dispatch<Action>;
 };
 
 export function CameraBody(props: CameraBodyProps): ReactElement | null {
-  const { activeCameraOptionId, dispatch } = props;
+  const { activeCameraOptionId, dispatch, canvas } = props;
 
   const video = useRef<HTMLVideoElement>(null);
-  const canvas = useRef<FilterCanvasHandle>(null);
 
   useEffect(() => {
     if (activeCameraOptionId != null && video.current && canvas.current) {
@@ -35,7 +35,7 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
         });
       return () => controller.abort();
     }
-  }, [activeCameraOptionId, dispatch]);
+  }, [activeCameraOptionId, dispatch, canvas]);
 
   return (
     <div
@@ -50,12 +50,6 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
           playsInline={true}
           ref={video}
           className="w-screen h-screen"
-        />
-      </div>
-      <div className="absolute top-0 left-0 flex w-screen h-screen z-0">
-        <FilterCanvas
-          className="object-contain w-screen h-screen"
-          ref={canvas}
         />
       </div>
     </div>
