@@ -127,10 +127,13 @@ function animationFrame(signal: AbortSignal) {
 }
 
 function useVisibility(): DocumentVisibilityState {
-  const [visibility, setVisibility] = useState<DocumentVisibilityState>(
-    document.visibilityState
-  );
+  const [visibility, setVisibility] = useState<DocumentVisibilityState | undefined>();
 
+  useEffect(() => {
+    if (visibility == null) {
+      setVisibility(document.visibilityState);
+    }
+  }, [visibility]);
   useEffect(() => {
     const listener = () => {
       setVisibility(document.visibilityState);
@@ -141,5 +144,5 @@ function useVisibility(): DocumentVisibilityState {
     };
   }, []);
 
-  return visibility;
+  return visibility ?? "hidden";
 }
