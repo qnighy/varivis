@@ -53,6 +53,7 @@ export function App() {
       />
       <div className="flex flex-col w-screen h-screen">
         <Navbar
+          state={state}
           cameraList={cameraList}
           selectedCameraOptionId={selectedCameraOptionId}
           config={config}
@@ -68,6 +69,7 @@ export function App() {
             state.startRequested &&
               <FilterCanvas
                 className="object-contain w-full h-full"
+                colorDeficiencySimulation={state.colorDeficiencySimulation}
                 ref={mainCanvas}
               />
           }

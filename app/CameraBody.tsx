@@ -22,7 +22,7 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
       const signal = controller.signal;
       runCamera({
         cameraOptionId: activeCameraOptionId,
-        canvas: canvas.current,
+        canvas,
         signal,
         onInitCamera: () => {
           dispatch({ type: "reloadCameraList" });
@@ -43,7 +43,7 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
 
 type RunCameraOptions = {
   cameraOptionId: string;
-  canvas: FilterCanvasHandle;
+  canvas: RefObject<FilterCanvasHandle | null>;
   signal: AbortSignal;
   onInitCamera?: () => void;
 };
@@ -64,7 +64,7 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     ensureNotAborted(signal);
     await animationFrame(signal);
     ensureNotAborted(signal);
-    canvas.update(video);
+    canvas.current?.update(video);
   }
 
   async function initStream(): Promise<DisposableMediaStream> {

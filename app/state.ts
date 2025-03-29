@@ -6,7 +6,14 @@ export type State = {
   rawCameraList: MediaDeviceInfoObj[];
   selectedCameraOptionId: string;
   startRequested: boolean;
+  colorDeficiencySimulation: ColorDeficiencySimulation;
 };
+export type ColorDeficiencySimulation =
+  | "none"
+  | "protanopia"
+  | "deuteranopia"
+  | "tritanopia"
+  | "achromatopsia";
 
 export type MediaDeviceInfoObj = {
   kind: string;
@@ -20,6 +27,7 @@ export const initialState: State = {
   rawCameraList: [],
   selectedCameraOptionId: "default",
   startRequested: false,
+  colorDeficiencySimulation: "none",
 };
 
 export type Action =
@@ -30,7 +38,8 @@ export type Action =
   | { type: "reloadCameraList" }
   | { type: "selectCamera"; payload: { deviceId: string } }
   | { type: "startCamera" }
-  | { type: "stopCamera" };
+  | { type: "stopCamera" }
+  | { type: "setColorDeficiencySimulation"; payload: { simulation: ColorDeficiencySimulation } };
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -52,6 +61,11 @@ export function reducer(state: State, action: Action): State {
       return { ...state, startRequested: true };
     case "stopCamera":
       return { ...state, startRequested: false };
+    case "setColorDeficiencySimulation":
+      return {
+        ...state,
+        colorDeficiencySimulation: action.payload.simulation,
+      };
     default:
       return state;
   }

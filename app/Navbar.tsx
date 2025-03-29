@@ -1,11 +1,13 @@
 import { Dispatch, ReactElement } from "react";
 import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Action, CameraOptionData } from "./state";
+import { Action, CameraOptionData, State } from "./state";
 import { CameraSelector } from "./CameraSelector";
 import { Config, SetConfig } from "./useConfig";
+import { ColorDeficiencySimulatorSelector } from "./ColorDeficiencySimulatorSelector";
 
 export type NavbarProps = {
+  state: State;
   cameraList: CameraOptionData[];
   selectedCameraOptionId: string;
   config: Config,
@@ -14,7 +16,7 @@ export type NavbarProps = {
 };
 
 export function Navbar(props: NavbarProps): ReactElement | null {
-  const { cameraList, selectedCameraOptionId, config, setConfig, dispatch } = props;
+  const { state, cameraList, selectedCameraOptionId, config, setConfig, dispatch } = props;
 
   return (
     <Disclosure as="nav" className="bg-gray-200 self-start w-full h-16 fixed top-0 z-10">
@@ -41,6 +43,10 @@ export function Navbar(props: NavbarProps): ReactElement | null {
                   />
                   Start the camera automatically
                 </label>
+                <ColorDeficiencySimulatorSelector
+                  state={state}
+                  dispatch={dispatch}
+                />
               </div>
               {/* Mobile menu button */}
               <div className="flex items-center md:hidden">
@@ -75,6 +81,10 @@ export function Navbar(props: NavbarProps): ReactElement | null {
                 />
                 Start the camera automatically
               </label>
+              <ColorDeficiencySimulatorSelector
+                state={state}
+                dispatch={dispatch}
+              />
             </div>
           </DisclosurePanel>
         </>
