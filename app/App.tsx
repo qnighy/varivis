@@ -1,5 +1,6 @@
-import { useEffect, useReducer, useRef } from "react";
+import { Dispatch, useEffect, useReducer, useRef } from "react";
 import { CameraBody } from "./CameraBody";
+import { Config, useConfig } from "./useConfig";
 import {
   initialState,
   reducer,
@@ -7,12 +8,14 @@ import {
   getCheckedSelectedCameraId,
   getActiveCameraOptionId,
   initCameraList,
+  Action,
 } from "./state";
 import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
 import { Navbar } from "./Navbar";
 import { StartScreen } from "./StartScreen";
 
 export function App() {
+  const { isConfigLoading, config, setConfig } = useConfig();
   const [state, dispatch] = useReducer(reducer, initialState);
   const cameraList = getCameraList(state);
   const selectedCameraOptionId = getCheckedSelectedCameraId(state);
@@ -35,6 +38,12 @@ export function App() {
     };
   }, [dispatch]);
 
+  useAutoStart({
+    isConfigLoading,
+    config,
+    dispatch,
+  });
+
   return (
     <>
       <CameraBody key={activeCameraOptionId}
@@ -46,6 +55,8 @@ export function App() {
         <Navbar
           cameraList={cameraList}
           selectedCameraOptionId={selectedCameraOptionId}
+          config={config}
+          setConfig={setConfig}
           dispatch={dispatch}
         />
         <div className="flex flex-col justify-center justify-items-center flex-grow">
@@ -64,4 +75,26 @@ export function App() {
       </div>
     </>
   );
+}
+
+type UseAutoStartParams = {
+  isConfigLoading: boolean;
+  config: Config;
+  dispatch: Dispatch<Action>;
+};
+function useAutoStart(params: UseAutoStartParams) {
+  const { isConfigLoading, config, dispatch } = params;
+  const isAutoStartProcessed = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (isConfigLoading) {
+      return;
+    }
+    if (!isAutoStartProcessed.current) {
+      isAutoStartProcessed.current = true;
+      if (config.autoStart) {
+        dispatch({ type: "startCamera" });
+      }
+    }
+  }, [isConfigLoading, config.autoStart, dispatch]);
 }

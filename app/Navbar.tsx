@@ -3,15 +3,18 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from "@headlessui/react
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Action, CameraOptionData } from "./state";
 import { CameraSelector } from "./CameraSelector";
+import { Config, SetConfig } from "./useConfig";
 
 export type NavbarProps = {
   cameraList: CameraOptionData[];
   selectedCameraOptionId: string;
+  config: Config,
+  setConfig: SetConfig;
   dispatch: Dispatch<Action>;
 };
 
 export function Navbar(props: NavbarProps): ReactElement | null {
-  const { cameraList, selectedCameraOptionId, dispatch } = props;
+  const { cameraList, selectedCameraOptionId, config, setConfig, dispatch } = props;
 
   return (
     <Disclosure as="nav" className="bg-gray-200 self-start w-full h-16 fixed top-0 z-10">
@@ -27,6 +30,17 @@ export function Navbar(props: NavbarProps): ReactElement | null {
                   selectedCameraOptionId={selectedCameraOptionId}
                   dispatch={dispatch}
                 />
+                <label
+                  className="w-full h-12 block text-gray-700 text-sm font-bold mb-2"
+                >
+                  <input
+                    type="checkbox"
+                    checked={config.autoStart}
+                    onChange={(e) => setConfig((config) => ({ ...config, autoStart: e.target.checked }))}
+                    className="ml-4"
+                  />
+                  Start the camera automatically
+                </label>
               </div>
               {/* Mobile menu button */}
               <div className="flex items-center md:hidden">
@@ -50,6 +64,17 @@ export function Navbar(props: NavbarProps): ReactElement | null {
                 selectedCameraOptionId={selectedCameraOptionId}
                 dispatch={dispatch}
               />
+              <label
+                className="w-full h-12 block text-gray-700 text-sm font-bold mb-2"
+              >
+                <input
+                  type="checkbox"
+                  checked={config.autoStart}
+                  onChange={(e) => setConfig((config) => ({ ...config, autoStart: e.target.checked }))}
+                  className="ml-4"
+                />
+                Start the camera automatically
+              </label>
             </div>
           </DisclosurePanel>
         </>
