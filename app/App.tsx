@@ -1,5 +1,4 @@
 import { useEffect, useReducer, useRef } from "react";
-import { CameraSelector } from "./CameraSelector";
 import { CameraStartToggle } from "./CameraStartToggle";
 import { CameraBody } from "./CameraBody";
 import {
@@ -38,38 +37,33 @@ export function App() {
 
   return (
     <>
-      <Navbar
-        cameraList={cameraList}
-        selectedCameraOptionId={selectedCameraOptionId}
-        dispatch={dispatch}
-      />
       <CameraBody key={activeCameraOptionId}
         activeCameraOptionId={activeCameraOptionId}
         dispatch={dispatch}
         canvas={mainCanvas}
       />
-      <div
-        className="flex flex-col items-center justify-center w-screen h-screen"
-      >
-        <div className="absolute top-0 left-0 flex w-screen h-screen -z-10">
-          <FilterCanvas
-            className="object-contain w-screen h-screen"
-            ref={mainCanvas}
-          />
-        </div>
-        <div
-          className="flex flex-col items-center justify-center mt-auto w-full max-w-xs p-4 bg-white border border-gray-300 rounded-md shadow-md z-10"
-        >
-          <CameraSelector
-            cameraList={cameraList}
-            selectedCameraOptionId={selectedCameraOptionId}
-            dispatch={dispatch}
-          />
-          <CameraStartToggle
-            selectedCameraOptionId={selectedCameraOptionId}
-            activeCameraOptionId={activeCameraOptionId}
-            dispatch={dispatch}
-          />
+      <div className="flex flex-col w-screen h-screen">
+        <Navbar
+          cameraList={cameraList}
+          selectedCameraOptionId={selectedCameraOptionId}
+          dispatch={dispatch}
+        />
+        <div className="flex flex-col justify-center justify-items-center flex-grow">
+          {
+            !state.startRequested &&
+              <CameraStartToggle
+                selectedCameraOptionId={selectedCameraOptionId}
+                activeCameraOptionId={activeCameraOptionId}
+                dispatch={dispatch}
+              />
+          }
+          {
+            state.startRequested &&
+              <FilterCanvas
+                className="object-contain w-full h-full"
+                ref={mainCanvas}
+              />
+          }
         </div>
       </div>
     </>
