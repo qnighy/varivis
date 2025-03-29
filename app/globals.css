@@ -1,6 +1,10 @@
-/*
-@import "tailwindcss";
+/* @import "tailwindcss"; */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+/* @import "tailwindcss/preflight.css" layer(base); */
+@import "tailwindcss/utilities.css" layer(utilities);
 
+/*
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -26,5 +30,3 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 */
-
-@import "./main.css";

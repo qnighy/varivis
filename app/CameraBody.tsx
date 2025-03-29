@@ -45,8 +45,8 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
         playsInline={true}
         ref={video}
       />
-      <div className="camera-output-wrapper">
-        <canvas className="camera-output" ref={canvas} />
+      <div className="flex w-screen h-screen">
+        <canvas className="object-contain" ref={canvas} />
       </div>
     </>
   );
