@@ -1,5 +1,4 @@
 import { useEffect, useReducer, useRef } from "react";
-import { CameraStartToggle } from "./CameraStartToggle";
 import { CameraBody } from "./CameraBody";
 import {
   initialState,
@@ -11,6 +10,7 @@ import {
 } from "./state";
 import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
 import { Navbar } from "./Navbar";
+import { StartScreen } from "./StartScreen";
 
 export function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -51,11 +51,7 @@ export function App() {
         <div className="flex flex-col justify-center justify-items-center flex-grow">
           {
             !state.startRequested &&
-              <CameraStartToggle
-                selectedCameraOptionId={selectedCameraOptionId}
-                activeCameraOptionId={activeCameraOptionId}
-                dispatch={dispatch}
-              />
+              <StartScreen dispatch={dispatch} />
           }
           {
             state.startRequested &&
