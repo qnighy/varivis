@@ -51,32 +51,19 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     signal,
     onInitCamera,
   } = options;
-  let video!: HTMLVideoElement;
-  let stream!: MediaStream;
 
-  try {
-    await initCamera();
-    onInitCamera?.();
-    while (true) {
-      ensureNotAborted(signal);
-      await animationFrame();
-      ensureNotAborted(signal);
-      canvas.update(video);
-    }
-  } finally {
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-      stream.getTracks().forEach((track) => track.stop());
-    }
+  using stream = await initStream();
+  onInitCamera?.();
+  const video = await initVideoElement(stream.value);
+
+  while (true) {
+    ensureNotAborted(signal);
+    await animationFrame();
+    ensureNotAborted(signal);
+    canvas.update(video);
   }
 
-  async function initCamera() {
-    ensureNotAborted(signal);
-    video = document.createElement("video");
-    video.muted = true;
-    video.playsInline = true;
-
+  async function initStream(): Promise<DisposableMediaStream> {
     const videoConstraints: MediaTrackConstraints = {};
     if (cameraOptionId.startsWith("deviceId:")) {
       const deviceId = cameraOptionId.slice("deviceId:".length);
@@ -84,29 +71,43 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
     } else {
       videoConstraints.facingMode = { ideal: "environment" };
     }
-    stream = await navigator.mediaDevices.getUserMedia({
+    ensureNotAborted(signal);
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: videoConstraints,
       audio: false
     });
+    return new DisposableMediaStream(stream);
+  }
+
+  async function initVideoElement(stream: MediaStream): Promise<HTMLVideoElement> {
+    const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
     video.srcObject = stream;
     ensureNotAborted(signal);
     await video.play();
-    onAbort(signal, () => {
-      stream.getTracks().forEach((track) => track.stop());
-    });
+    ensureNotAborted(signal);
+    return video;
+  }
+}
+
+class DisposableMediaStream {
+  readonly value: MediaStream;
+
+  constructor(stream: MediaStream) {
+    this.value = stream;
+  }
+
+  [Symbol.dispose]() {
+    for (const track of this.value.getTracks()) {
+      track.stop();
+    }
   }
 }
 
 function ensureNotAborted(signal: AbortSignal, msg = "Aborted") {
   if (signal.aborted) {
     throw new DOMException(msg, "AbortError");
-  }
-}
-function onAbort(signal: AbortSignal, callback: () => void) {
-  if (signal.aborted) {
-    callback();
-  } else {
-    signal.addEventListener("abort", callback, { once: true });
   }
 }
 function animationFrame() {
