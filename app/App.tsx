@@ -11,6 +11,7 @@ import {
   initCameraList,
 } from "./state";
 import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
+import { Navbar } from "./Navbar";
 
 export function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -37,19 +38,24 @@ export function App() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center w-screen h-screen bg-gray-100"
+      className="flex flex-col items-center justify-center w-screen h-screen"
     >
       <CameraBody key={activeCameraOptionId}
         activeCameraOptionId={activeCameraOptionId}
         dispatch={dispatch}
         canvas={mainCanvas}
       />
-      <div className="absolute top-0 left-0 flex w-screen h-screen z-0">
+      <div className="absolute top-0 left-0 flex w-screen h-screen -z-10">
         <FilterCanvas
           className="object-contain w-screen h-screen"
           ref={mainCanvas}
         />
       </div>
+      <Navbar
+        cameraList={cameraList}
+        selectedCameraOptionId={selectedCameraOptionId}
+        dispatch={dispatch}
+      />
       <div
         className="flex flex-col items-center justify-center mt-auto w-full max-w-xs p-4 bg-white border border-gray-300 rounded-md shadow-md z-10"
       >
