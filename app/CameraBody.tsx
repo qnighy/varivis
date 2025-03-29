@@ -1,4 +1,4 @@
-import { Dispatch, ReactElement, RefObject, useEffect } from "react";
+import { Dispatch, ReactElement, RefObject, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Action } from "./state";
 import { FilterCanvasHandle } from "./FilterCanvas";
@@ -11,8 +11,12 @@ export type CameraBodyProps = {
 
 export function CameraBody(props: CameraBodyProps): ReactElement | null {
   const { activeCameraOptionId, dispatch, canvas } = props;
+  const visibility = useVisibility();
 
   useEffect(() => {
+    if (visibility === "hidden") {
+      return;
+    }
     if (activeCameraOptionId != null && canvas.current) {
       const controller = new AbortController();
       const signal = controller.signal;
@@ -32,7 +36,7 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
         });
       return () => controller.abort();
     }
-  }, [activeCameraOptionId, dispatch, canvas]);
+  }, [activeCameraOptionId, dispatch, canvas, visibility]);
 
   return null;
 }
@@ -58,7 +62,7 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
 
   while (true) {
     ensureNotAborted(signal);
-    await animationFrame();
+    await animationFrame(signal);
     ensureNotAborted(signal);
     canvas.update(video);
   }
@@ -110,6 +114,32 @@ function ensureNotAborted(signal: AbortSignal, msg = "Aborted") {
     throw new DOMException(msg, "AbortError");
   }
 }
-function animationFrame() {
-  return new Promise((resolve) => requestAnimationFrame(resolve));
+function animationFrame(signal: AbortSignal) {
+  return new Promise((resolve, reject) => {
+    requestAnimationFrame(resolve);
+    signal.addEventListener("abort", () => {
+      reject(new DOMException("Aborted", "AbortError"));
+    }, { once: true });
+    if (signal.aborted) {
+      reject(new DOMException("Aborted", "AbortError"));
+    }
+  });
+}
+
+function useVisibility(): DocumentVisibilityState {
+  const [visibility, setVisibility] = useState<DocumentVisibilityState>(
+    document.visibilityState
+  );
+
+  useEffect(() => {
+    const listener = () => {
+      setVisibility(document.visibilityState);
+    };
+    document.addEventListener("visibilitychange", listener);
+    return () => {
+      document.removeEventListener("visibilitychange", listener);
+    };
+  }, []);
+
+  return visibility;
 }
