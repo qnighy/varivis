@@ -1,4 +1,4 @@
-import { Dispatch, ReactElement, RefObject, useEffect, useRef } from "react";
+import { Dispatch, ReactElement, RefObject, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Action } from "./state";
 import { FilterCanvasHandle } from "./FilterCanvas";
@@ -12,15 +12,12 @@ export type CameraBodyProps = {
 export function CameraBody(props: CameraBodyProps): ReactElement | null {
   const { activeCameraOptionId, dispatch, canvas } = props;
 
-  const video = useRef<HTMLVideoElement>(null);
-
   useEffect(() => {
-    if (activeCameraOptionId != null && video.current && canvas.current) {
+    if (activeCameraOptionId != null && canvas.current) {
       const controller = new AbortController();
       const signal = controller.signal;
       runCamera({
         cameraOptionId: activeCameraOptionId,
-        video: video.current,
         canvas: canvas.current,
         signal,
         onInitCamera: () => {
@@ -37,28 +34,11 @@ export function CameraBody(props: CameraBodyProps): ReactElement | null {
     }
   }, [activeCameraOptionId, dispatch, canvas]);
 
-  return (
-    <div
-      className="flex flex-col items-center justify-center w-screen h-screen"
-    >
-      <div
-        className="absolute top-0 left-0 w-screen h-screen opacity-0"
-      >
-        <video
-          style={{ display: "none" }}
-          muted={true}
-          playsInline={true}
-          ref={video}
-          className="w-screen h-screen"
-        />
-      </div>
-    </div>
-  );
+  return null;
 }
 
 type RunCameraOptions = {
   cameraOptionId: string;
-  video: HTMLVideoElement;
   canvas: FilterCanvasHandle;
   signal: AbortSignal;
   onInitCamera?: () => void;
@@ -67,11 +47,11 @@ type RunCameraOptions = {
 async function runCamera(options: RunCameraOptions): Promise<void> {
   const {
     cameraOptionId,
-    video,
     canvas,
     signal,
     onInitCamera,
   } = options;
+  let video!: HTMLVideoElement;
 
   await initCamera();
   onInitCamera?.();
@@ -84,6 +64,10 @@ async function runCamera(options: RunCameraOptions): Promise<void> {
 
   async function initCamera() {
     ensureNotAborted(signal);
+    video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+
     const videoConstraints: MediaTrackConstraints = {};
     if (cameraOptionId.startsWith("deviceId:")) {
       const deviceId = cameraOptionId.slice("deviceId:".length);

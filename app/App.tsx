@@ -51,7 +51,7 @@ export function App() {
         />
       </div>
       <div
-        className="flex flex-col items-center justify-center w-full max-w-xs p-4 bg-white border border-gray-300 rounded-md shadow-md z-10"
+        className="flex flex-col items-center justify-center mt-auto w-full max-w-xs p-4 bg-white border border-gray-300 rounded-md shadow-md z-10"
       >
         <CameraSelector
           cameraList={cameraList}
