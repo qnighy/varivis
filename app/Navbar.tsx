@@ -14,7 +14,7 @@ export function Navbar(props: NavbarProps): ReactElement | null {
   const { cameraList, selectedCameraOptionId, dispatch } = props;
 
   return (
-    <Disclosure as="nav" className="bg-gray-200 self-start">
+    <Disclosure as="nav" className="bg-gray-200 self-start w-full fixed top-0 z-10">
       {({ open }) => (
         <>
           {/* Main navigation container */}
