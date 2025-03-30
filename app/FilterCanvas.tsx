@@ -293,7 +293,9 @@ const fragmentShader = `
     float currentBrightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     color.rgb = color.rgb * targetBrightness / currentBrightness;
     // Apply the color deficiency matrix
-    if (u_colorDeficiencySimulation == 1) {
+    if (u_colorDeficiencySimulation == 0) {
+      // No transformation
+    } else if (u_colorDeficiencySimulation == 1) {
       color.rgb = protanopiaMatrix * color.rgb;
     } else if (u_colorDeficiencySimulation == 2) {
       color.rgb = deuteranopiaMatrix * color.rgb;
