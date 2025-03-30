@@ -13,6 +13,8 @@ import {
 import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
 import { Navbar } from "./Navbar";
 import { StartScreen } from "./StartScreen";
+import { FilterImage } from "./FilterImage";
+import colorComparisonImage from "./color-comparison.png";
 
 export function App() {
   const { isConfigLoading, config, setConfig } = useConfig();
@@ -67,11 +69,19 @@ export function App() {
           }
           {
             state.startRequested &&
-              <FilterCanvas
-                className="object-contain w-full h-full"
-                colorDeficiencySimulation={state.colorDeficiencySimulation}
-                ref={mainCanvas}
-              />
+              <>
+                <FilterCanvas
+                  className="object-contain w-full flex-grow"
+                  colorDeficiencySimulation={state.colorDeficiencySimulation}
+                  ref={mainCanvas}
+                />
+                <FilterImage
+                  src={colorComparisonImage.src}
+                  width={colorComparisonImage.width}
+                  height={colorComparisonImage.height}
+                  colorDeficiencySimulation={state.colorDeficiencySimulation}
+                />
+              </>
           }
         </div>
       </div>
