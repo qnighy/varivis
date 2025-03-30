@@ -56,6 +56,7 @@ class RenderContext {
   #programInfo: twgl.ProgramInfo;
   #bufferInfo: twgl.BufferInfo;
   #texture: WebGLTexture;
+  #hasTexture: boolean = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.#canvas = canvas;
@@ -81,6 +82,21 @@ class RenderContext {
     options: UpdateOptions
   ) {
     const { colorDeficiencySimulation } = options;
+    // If the video is ready, update the texture
+    if (element instanceof HTMLVideoElement) {
+      if (element.readyState >= element.HAVE_CURRENT_DATA) {
+        // Update the texture with the current video frame
+        twgl.setTextureFromElement(this.#gl, this.#texture, element);
+        this.#hasTexture = true;
+      }
+    } else if (element) {
+      twgl.setTextureFromElement(this.#gl, this.#texture, element);
+      this.#hasTexture = true;
+    }
+    if (!this.#hasTexture) {
+      // Not ready
+      return;
+    }
     const { width, height } =
       element instanceof HTMLVideoElement
         ? { width: element.videoWidth, height: element.videoHeight }
@@ -89,15 +105,6 @@ class RenderContext {
         : { width: this.#canvas.width, height: this.#canvas.height };
     this.#canvas.width = width;
     this.#canvas.height = height;
-    // If the video is ready, update the texture
-    if (element instanceof HTMLVideoElement) {
-      if (element.readyState >= element.HAVE_CURRENT_DATA) {
-        // Update the texture with the current video frame
-        twgl.setTextureFromElement(this.#gl, this.#texture, element);
-      }
-    } else if (element) {
-      twgl.setTextureFromElement(this.#gl, this.#texture, element);
-    }
 
     // Adjust viewport/canvas size if needed
     // twgl.resizeCanvasToDisplaySize(gl.canvas as HTMLCanvasElement);
