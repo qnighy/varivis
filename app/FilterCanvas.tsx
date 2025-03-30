@@ -79,6 +79,9 @@ class RenderContext {
       mag: gl.LINEAR,
       wrap: gl.CLAMP_TO_EDGE,
     });
+    // Use our program and buffers
+    this.#gl.useProgram(this.#programInfo.program);
+    twgl.setBuffersAndAttributes(this.#gl, this.#programInfo, this.#bufferInfo);
   }
 
   update(
@@ -117,10 +120,6 @@ class RenderContext {
     // Clear the canvas
     this.#gl.clearColor(0, 0, 0, 1);
     this.#gl.clear(this.#gl.COLOR_BUFFER_BIT);
-
-    // Use our program and buffers
-    this.#gl.useProgram(this.#programInfo.program);
-    twgl.setBuffersAndAttributes(this.#gl, this.#programInfo, this.#bufferInfo);
 
     const unitSize = unitLength / this.#canvas.clientWidth * width;
     // Set uniforms (the texture)
