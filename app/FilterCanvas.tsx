@@ -228,11 +228,25 @@ const fragmentShader = `
   );
 
 
-  void main() {
-    vec4 color = texture2D(u_texture, v_texcoord);
-    vec3 trhColor = sRGBToTRH * color.rgb;
-    vec2 unitCoord = v_texcoord * u_unitDimension;
-    vec2 c = unitCoord;
+  // Converts the point to the coordinate system
+  // appropriate for the rhombitrihexagonal tessellation.
+  //
+  // Input coordinate:
+  // - Input is in R^2.
+  // - (0, 0) is the center of the first hexagon.
+  // - (1, 0) is the center of the neighboring hexagon.
+  //
+  // Output coordinate:
+  //
+  // - Output is in R^2, where 0 <= y <= x <= 1.
+  // - (0, 0) is the center of the hexagon.
+  // - (1, 0) is the center of the square.
+  // - (1, 1) is the center of the triangle.
+  // - The line segment x = sqrt(3)/(1 + sqrt(3)) is
+  //   half the edge of the hexagon neighboring the square.
+  // - The line segment y = sqrt(3)/(1 + sqrt(3)) is
+  //   half the edge of the triangle neighboring the square.
+  vec2 rhombitrihexagonalCoord(in vec2 c) {
     c = mat2(
       1.0, 0.0,
       -0.5773502691896258, 1.1547005383792515
@@ -255,6 +269,15 @@ const fragmentShader = `
       c = vec2(1.0 - c.x - c.y, c.y);
     }
     c = vec2(c.x * 2.0 + c.y, c.y * 3.0);
+    return c;
+  }
+
+  void main() {
+    vec4 color = texture2D(u_texture, v_texcoord);
+    vec3 trhColor = sRGBToTRH * color.rgb;
+    vec2 unitCoord = v_texcoord * u_unitDimension;
+    vec2 c = unitCoord;
+    c = rhombitrihexagonalCoord(c);
 
     // Split the triangle in sqrt(3) : 1 ratio in each axis
     // resulting in 3 : 2sqrt(3) : 1 ratio area-wise.
