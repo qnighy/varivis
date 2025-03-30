@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import iconSvgImage from './icon.svg';
+import icon144x144Image from './icon-144x144.png';
 import screenshotDesktop from './screenshot-desktop.png';
 import screenshotMobile from './screenshot-mobile.png';
 import nextConfig from '../next.config.mjs';
@@ -19,9 +20,13 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       {
         src: iconSvgImage.src,
-        sizes: '192x192',
-        purpose: 'any',
+        sizes: `${iconSvgImage.width}x${iconSvgImage.height}`,
         type: 'image/svg',
+      },
+      {
+        src: icon144x144Image.src,
+        sizes: `${icon144x144Image.width}x${icon144x144Image.height}`,
+        type: 'image/png',
       },
     ],
     screenshots: [
