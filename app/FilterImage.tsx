@@ -26,7 +26,7 @@ export function FilterImage(props: FilterImageProps): ReactElement | null {
     img.current.height = height ?? 0;
 
     const onLoad = () => {
-      if (canvas.current && img.current) {
+      if (canvas.current && img.current?.complete) {
         canvas.current.update(img.current);
       }
     };
@@ -41,7 +41,7 @@ export function FilterImage(props: FilterImageProps): ReactElement | null {
   }, [src, alt, width, height]);
 
   useEffect(() => {
-    if (canvas.current && img.current) {
+    if (canvas.current && img.current?.complete) {
       canvas.current.update(img.current);
     }
   }, [canvas, img]);
