@@ -180,6 +180,15 @@ const fragmentShader = `
   uniform sampler2D u_texture;
   uniform vec2 u_unitDimension;
   uniform int u_colorDeficiencySimulation;
+
+  vec3 mixPolyfill(in vec3 a, in vec3 b, in bvec3 c) {
+    return vec3(
+      c.x ? b.x : a.x,
+      c.y ? b.y : a.y,
+      c.z ? b.z : a.z
+    );
+  }
+
   // Conversion from linear-sRGB to special color space
   // [-0.01945, 1.34915, -0.3297]
   // [ 0.48055, 0.84915, -0.3297]
@@ -272,9 +281,57 @@ const fragmentShader = `
     return c;
   }
 
+  // Converts (R, G, B) in linear-sRGB color space to
+  // (Y, u', v') in mixed XYZ + CIE 1976 UCS color space.
+  //
+  // Roughly:
+  // - Y: brightness (0 - 1)
+  // - u': more red than green (0.00 - 0.6x)
+  // - v': more yellow than blue (0.0x - 0.5x)
+  //
+  // For sRGB,
+  // - The red primary is (u', v') = (0.4507, 0.5229)
+  // - The green primary is (u', v') = (0.1250, 0.5625)
+  // - The blue primary is (u', v') = (0.1754, 0.1579)
+  vec3 srgbToYuv(in vec3 srgb) {
+    vec3 xyz = mat3(
+      0.4124564, 0.2126729, 0.0193339,
+      0.3575761, 0.7151522, 0.1191920,
+      0.1804375, 0.0721750, 0.9503041
+    ) * srgb;
+    float denominator = xyz.x + 15.0 * xyz.y + 3.0 * xyz.z;
+    float u = 4.0 * xyz.x / denominator;
+    float v = 9.0 * xyz.y / denominator;
+    return vec3(xyz.y, u, v);
+  }
+
+  // (u', v') of the D65 white point
+  const vec2 whiteUV = vec2(0.1978398, 0.4683363);
+
+  // Adjust components within the same brightness so that the values are in the range.
+  void preferBrightness(inout vec3 color) {
+    float brightness = min(dot(color, vec3(0.2126, 0.7152, 0.0722)), 1.0);
+    // The result should be in the form of vec3(brightness) + scalar * chroma.
+    vec3 chroma = color - vec3(brightness);
+    vec3 componentFactors = mixPolyfill(
+      vec3(1.0),
+      min(
+        vec3(1.0 - brightness) / chroma,
+        vec3(1.0)
+      ),
+      lessThan(vec3(0.0), chroma)
+    );
+    float factor = min(min(componentFactors.x, componentFactors.y), componentFactors.z);
+    color = vec3(brightness) + factor * chroma;
+  }
+
   void main() {
-    vec4 color = texture2D(u_texture, v_texcoord);
-    vec3 trhColor = sRGBToTRH * color.rgb;
+    // Color
+    vec4 inputColor = texture2D(u_texture, v_texcoord);
+    vec3 yuv = srgbToYuv(inputColor.rgb);
+    vec2 relUV = yuv.yz - whiteUV;
+
+    // Coordinates
     vec2 unitCoord = v_texcoord * u_unitDimension;
     vec2 c = unitCoord;
     c = rhombitrihexagonalCoord(c);
@@ -284,26 +341,30 @@ const fragmentShader = `
 
     float inTriangle = smoothstep(0.62, 0.64, c.y);
     float inHexagon = 1.0 - smoothstep(0.62, 0.64, c.x);
-    vec3 trhRatio = vec3(
-      inTriangle,
-      1.0 - inTriangle - inHexagon,
-      inHexagon
+    vec2 placeFactor = vec2(
+      // Area ratio: 1 : 2sqrt(3)
+      inTriangle - 0.2240,
+      // Area ratio: 3 : 2sqrt(3)
+      inHexagon - 0.4641
     );
-    float targetBrightness = dot(trhColor, trhRatio);
-    float currentBrightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    color.rgb = color.rgb * targetBrightness / currentBrightness;
+    float brightnessAdjust = 1.0 + 4.0 * dot(placeFactor, relUV * vec2(-1, 1));
+    float currentBrightness = yuv.x;
+    float targetBrightness = currentBrightness * brightnessAdjust;
+    vec3 outputColor3 = inputColor.rgb * targetBrightness / currentBrightness;
+    preferBrightness(outputColor3);
+
     // Apply the color deficiency matrix
     if (u_colorDeficiencySimulation == 0) {
       // No transformation
     } else if (u_colorDeficiencySimulation == 1) {
-      color.rgb = protanopiaMatrix * color.rgb;
+      outputColor3 = protanopiaMatrix * outputColor3;
     } else if (u_colorDeficiencySimulation == 2) {
-      color.rgb = deuteranopiaMatrix * color.rgb;
+      outputColor3 = deuteranopiaMatrix * outputColor3;
     } else if (u_colorDeficiencySimulation == 3) {
-      color.rgb = tritanopiaMatrix * color.rgb;
+      outputColor3 = tritanopiaMatrix * outputColor3;
     } else if (u_colorDeficiencySimulation == 4) {
-      color.rgb = achromatopsiaMatrix * color.rgb;
+      outputColor3 = achromatopsiaMatrix * outputColor3;
     }
-    gl_FragColor = color;
+    gl_FragColor = vec4(outputColor3, inputColor.a);
   }
 `;
