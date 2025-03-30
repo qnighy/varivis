@@ -30,6 +30,10 @@ export function FilterImage(props: FilterImageProps): ReactElement | null {
         canvas.current.update(img.current);
       }
     };
+
+    if (img.current.complete) {
+      onLoad();
+    }
     img.current.addEventListener("load", onLoad);
     return () => {
       img.current?.removeEventListener("load", onLoad);
