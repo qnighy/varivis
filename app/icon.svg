@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="48"
-   height="48"
-   viewBox="0 0 12.7 12.7"
+   width="192"
+   height="192"
+   viewBox="0 0 50.800001 50.8"
    version="1.1"
    id="svg1"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -17,14 +17,15 @@
     <path
        style="fill:#989aff;fill-opacity:1;stroke-width:3.70417"
        id="path1"
-       d="M 9.0820271,7.9273366 6.3499999,9.5046732 3.6179726,7.9273366 l 1e-7,-3.1546734 2.7320272,-1.5773366 2.7320273,1.5773366 z" />
+       d="M 9.0820271,7.9273366 6.3499999,9.5046732 3.6179726,7.9273366 l 1e-7,-3.1546734 2.7320272,-1.5773366 2.7320273,1.5773366 z"
+       transform="matrix(4,0,0,4,8.5194558e-4,0.00139611)" />
     <rect
-       style="display:inline;fill:#535309;fill-opacity:1;stroke-width:3.69516"
+       style="display:inline;fill:#535309;fill-opacity:1;stroke-width:14.7806"
        id="rect1"
-       width="3.1700361"
-       height="3.1546271"
-       x="9.0820274"
-       y="4.7726631" />
+       width="12.680144"
+       height="12.618508"
+       x="36.32896"
+       y="19.092051" />
     <use
        x="0"
        y="0"
@@ -34,37 +35,37 @@
        x="0"
        y="0"
        xlink:href="#rect1"
-       transform="rotate(60,6.3497798,6.3496557)"
+       transform="rotate(60,25.39997,25.400019)"
        id="use46" />
     <use
        x="0"
        y="0"
        xlink:href="#rect1"
-       transform="rotate(120,6.3497798,6.3496557)"
+       transform="rotate(120,25.399969,25.40002)"
        id="use47" />
     <use
        x="0"
        y="0"
        xlink:href="#rect1"
-       transform="rotate(180,6.3497798,6.3496557)"
+       transform="rotate(180,25.399968,25.400018)"
        id="use48" />
     <use
        x="0"
        y="0"
        xlink:href="#rect1"
-       transform="rotate(-120,6.3497798,6.3496557)"
+       transform="rotate(-120,25.399968,25.40002)"
        id="use49" />
     <use
        x="0"
        y="0"
        xlink:href="#rect1"
-       transform="rotate(-60,6.3497798,6.3496557)"
+       transform="rotate(-60,25.399969,25.40002)"
        id="use50" />
     <path
        style="fill:#fe6d79;fill-opacity:1;stroke-width:3.70417"
        id="path50"
        d="m 5.641893,1.7095031 -1.3488291,-2.3362403 2.697658,-7e-8 z"
-       transform="matrix(1.1751067,0,0,1.1751067,-0.27963828,1.186115)" />
+       transform="matrix(4.7004268,0,0,4.7004268,-1.1177021,4.7458561)" />
     <use
        x="0"
        y="0"
@@ -74,31 +75,31 @@
        x="0"
        y="0"
        xlink:href="#path50"
-       transform="rotate(60,6.3501879,6.3494511)"
+       transform="rotate(60,25.401602,25.399201)"
        id="use52" />
     <use
        x="0"
        y="0"
        xlink:href="#path50"
-       transform="rotate(120,6.3501879,6.3494511)"
+       transform="rotate(120,25.401601,25.399202)"
        id="use53" />
     <use
        x="0"
        y="0"
        xlink:href="#path50"
-       transform="rotate(180,6.3501879,6.3494511)"
+       transform="rotate(180,25.401601,25.3992)"
        id="use54" />
     <use
        x="0"
        y="0"
        xlink:href="#path50"
-       transform="rotate(-120,6.3501879,6.3494511)"
+       transform="rotate(-120,25.401601,25.399201)"
        id="use55" />
     <use
        x="0"
        y="0"
        xlink:href="#path50"
-       transform="rotate(-60,6.3501879,6.3494511)"
+       transform="rotate(-60,25.401602,25.399201)"
        id="use56" />
   </g>
 </svg>
