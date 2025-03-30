@@ -6,6 +6,7 @@ export type FilterCanvasProps = {
   className?: string;
   style?: React.CSSProperties;
   colorDeficiencySimulation: ColorDeficiencySimulation;
+  unitLength: number;
 };
 export type FilterCanvasHandle = {
   element: HTMLCanvasElement;
@@ -13,7 +14,7 @@ export type FilterCanvasHandle = {
 };
 
 function FilterCanvas(props: FilterCanvasProps, ref: ForwardedRef<FilterCanvasHandle>): ReactElement | null {
-  const { className, style, colorDeficiencySimulation } = props;
+  const { className, style, colorDeficiencySimulation, unitLength } = props;
 
   const elemRef = useRef<HTMLCanvasElement>(null);
   const renderContext = useRef<RenderContext | null>(null);
@@ -25,16 +26,18 @@ function FilterCanvas(props: FilterCanvasProps, ref: ForwardedRef<FilterCanvasHa
   useEffect(() => {
     renderContext.current?.update(undefined, {
       colorDeficiencySimulation,
+      unitLength,
     });
-  }, [colorDeficiencySimulation]);
+  }, [colorDeficiencySimulation, unitLength]);
   useImperativeHandle(ref, () => ({
     element: elemRef.current!,
     update: (element: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement) => {
       renderContext.current?.update(element, {
         colorDeficiencySimulation,
+        unitLength,
       });
     },
-  }), [colorDeficiencySimulation]);
+  }), [colorDeficiencySimulation, unitLength]);
   return (
     <canvas
       className={className}
@@ -48,6 +51,7 @@ export { FilterCanvas_ as FilterCanvas };
 
 type UpdateOptions = {
   colorDeficiencySimulation: ColorDeficiencySimulation;
+  unitLength: number;
 };
 
 class RenderContext {
@@ -81,7 +85,7 @@ class RenderContext {
     element: HTMLCanvasElement | HTMLImageElement | HTMLVideoElement | undefined,
     options: UpdateOptions
   ) {
-    const { colorDeficiencySimulation } = options;
+    const { colorDeficiencySimulation, unitLength } = options;
     // If the video is ready, update the texture
     if (element instanceof HTMLVideoElement) {
       if (element.readyState >= element.HAVE_CURRENT_DATA) {
@@ -118,9 +122,8 @@ class RenderContext {
     this.#gl.useProgram(this.#programInfo.program);
     twgl.setBuffersAndAttributes(this.#gl, this.#programInfo, this.#bufferInfo);
 
+    const unitSize = unitLength / this.#canvas.clientWidth * width;
     // Set uniforms (the texture)
-    const canvasSize = Math.min(width, height);
-    const unitSize = canvasSize / 30;
     const uniforms = {
       u_texture: this.#texture,
       u_unitDimension: [width / unitSize, height / unitSize],

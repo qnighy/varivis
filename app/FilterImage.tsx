@@ -10,10 +10,11 @@ export type FilterImageProps = {
   className?: string;
   style?: React.CSSProperties;
   colorDeficiencySimulation: ColorDeficiencySimulation;
+  unitLength: number;
 };
 
 export function FilterImage(props: FilterImageProps): ReactElement | null {
-  const { src, alt, width, height, className, style, colorDeficiencySimulation } = props;
+  const { src, alt, width, height, className, style, colorDeficiencySimulation, unitLength } = props;
   const img = useRef<HTMLImageElement | null>(null);
   const canvas = useRef<FilterCanvasHandle>(null);
 
@@ -47,6 +48,7 @@ export function FilterImage(props: FilterImageProps): ReactElement | null {
       className={className}
       style={style}
       colorDeficiencySimulation={colorDeficiencySimulation}
+      unitLength={unitLength}
     />
   )
 }

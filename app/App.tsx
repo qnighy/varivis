@@ -10,6 +10,7 @@ import {
   initCameraList,
   Action,
 } from "./state";
+import { usePageSize } from "./usePageSize";
 import { FilterCanvas, FilterCanvasHandle } from "./FilterCanvas";
 import { Navbar } from "./Navbar";
 import { StartScreen } from "./StartScreen";
@@ -22,6 +23,10 @@ export function App() {
   const cameraList = getCameraList(state);
   const selectedCameraOptionId = getCheckedSelectedCameraId(state);
   const activeCameraOptionId = getActiveCameraOptionId(state);
+
+  const pageSize = usePageSize();
+  const baseLength = pageSize.isLoading ? 300 : Math.min(pageSize.width, pageSize.height);
+  const unitLength = baseLength / 30;
 
   const mainCanvas = useRef<FilterCanvasHandle>(null);
 
@@ -73,6 +78,7 @@ export function App() {
                 <FilterCanvas
                   className="object-contain w-full flex-grow"
                   colorDeficiencySimulation={state.colorDeficiencySimulation}
+                  unitLength={unitLength}
                   ref={mainCanvas}
                 />
                 <FilterImage
@@ -80,6 +86,7 @@ export function App() {
                   width={colorComparisonImage.width}
                   height={colorComparisonImage.height}
                   colorDeficiencySimulation={state.colorDeficiencySimulation}
+                  unitLength={unitLength}
                 />
               </>
           }
