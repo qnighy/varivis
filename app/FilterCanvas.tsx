@@ -18,11 +18,17 @@ function FilterCanvas(props: FilterCanvasProps, ref: ForwardedRef<FilterCanvasHa
 
   const elemRef = useRef<HTMLCanvasElement>(null);
   const renderContext = useRef<RenderContext | null>(null);
+  // Copy the class here to allow reloading in dev mode
+  const RenderContext_ = RenderContext;
   useEffect(() => {
     if (elemRef.current) {
-      renderContext.current = new RenderContext(elemRef.current);
+      renderContext.current = new RenderContext_(elemRef.current);
     }
-  }, []);
+    return () => {
+      renderContext.current?.[Symbol.dispose]();
+      renderContext.current = null;
+    };
+  }, [RenderContext_]);
   useEffect(() => {
     renderContext.current?.update(undefined, {
       colorDeficiencySimulation,
@@ -132,6 +138,19 @@ class RenderContext {
 
     // Draw!
     twgl.drawBufferInfo(this.#gl, this.#bufferInfo);
+  }
+
+  [Symbol.dispose]() {
+    if (this.#texture) {
+      this.#gl.deleteTexture(this.#texture);
+    }
+    if (this.#programInfo) {
+      this.#gl.deleteProgram(this.#programInfo.program);
+    }
+    if (this.#bufferInfo?.attribs) {
+      this.#gl.deleteBuffer(this.#bufferInfo.attribs.position.buffer);
+      this.#gl.deleteBuffer(this.#bufferInfo.attribs.texcoord.buffer);
+    }
   }
 }
 
